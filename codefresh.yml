@@ -52,3 +52,14 @@ steps:
     type: push
     candidate: '${{build_image_worker}}'
     tag: '${{CF_BRANCH}}'
+    
+ unit_test_step:
+   title: "Testing attaching of flow volume"
+   type: composition
+   composition: 'voting-app-test'
+   composition_candidates:
+     test:
+       image: alpine:3.3
+       command: ls -a -l /
+       volume:
+         ${{CF_VOLUME}}:/flow_volume
