@@ -2,62 +2,21 @@ version: '1.0'
 
 steps:
 
-#build all the images
-  build_image_vote:
-    title: Building Voting Image
-    type: build
-    #Important: rename this image to to a valid repository in your registry. For example: myUserName/vote
-    image_name: aloncodefresh/vote
-    #The directory should be relative to git repository that is used for cloning
-    working_directory: ./vote/
-    #Dockerfile location should be relative to the working directory
-    dockerfile: Dockerfile
-
-  build_image_result:
-    title: Building Result Image
-    type: build
-    image_name: aloncodefresh/result
-    working_directory: ./result/
-    dockerfile: Dockerfile
-
-  build_image_worker:
-    title: Building Worker Image
-    type: build
-    image_name: aloncodefresh/worker
-    working_directory: ./worker/
-    dockerfile: Dockerfile
-
   unit_test:
     type: composition
     working_directory: ${{main_clone}}
     composition:
       version: '2'
       services:
-        vote:
-          command: python app.py
-          ports:
-            - '5000'
-          image: 'aloncodefresh/votingapp_vote:CF-3764'
-        result:
-          command: nodemon --debug server.js $CF_VOLUME_PATH
-          ports:
-            - '5001'
-            - '5858'
-          image: 'aloncodefresh/votingapp_result:CF-3764'
-        worker:
-          image: 'aloncodefresh/votingapp_worker:CF-3764'
         redis:
           image: 'redis:alpine'
           container_name: redis
           ports:
             - '6379'
-        db:
-          image: 'postgres:9.4'
-          container_name: db
     composition_candidates:
         test:
-          image: redis
-          command: bash -c 'sleep 30 && echo ${{CF_VOLUME_PATH}}'
+          image: redis:alpine
+          command: bash -c 'sleep 30 && echo branch2: ${{CF_BRANCH}} branch1: ${CF_BRANCH} branch0: $CF_BRANCH path2: ${{CF_VOLUME_PATH}} path1: ${CF_VOLUME_PATH} path0: $CF_VOLUME_PATH'
           volumes:
             - 'db-data:/var/lib/postgresql/data'
             - '${{CF_VOLUME_NAME}}:/codefresh/'
