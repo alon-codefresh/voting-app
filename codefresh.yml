@@ -35,48 +35,25 @@ steps:
       services:
         vote:
           command: python app.py
-          volumes:
-            - './vote:/app'
           ports:
-            - '5000:80'
-          networks:
-            - front-tier
-            - back-tier
+            - '5000'
           image: 'aloncodefresh/votingapp_vote:CF-3764'
         result:
           command: nodemon --debug server.js $CF_VOLUME_PATH
-          volumes:
-            - './result:/app'
           ports:
-            - '5001:80'
-            - '5858:5858'
-          networks:
-            - front-tier
-            - back-tier
+            - '5001'
+            - '5858'
           image: 'aloncodefresh/votingapp_result:CF-3764'
         worker:
-          networks:
-            - back-tier
           image: 'aloncodefresh/votingapp_worker:CF-3764'
         redis:
           image: 'redis:alpine'
           container_name: redis
           ports:
             - '6379'
-          networks:
-            - back-tier
         db:
           image: 'postgres:9.4'
           container_name: db
-          volumes:
-            - 'db-data:/var/lib/postgresql/data'
-          networks:
-            - back-tier
-      volumes:
-        db-data: null
-      networks:
-        front-tier: null
-        back-tier: null
     composition_candidates:
         test:
           image: redis
