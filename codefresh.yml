@@ -7,7 +7,7 @@ steps:
     title: Building Voting Image
     type: build
     #Important: rename this image to to a valid repository in your registry. For example: myUserName/vote
-    image_name: containers101/vote
+    image_name: aloncodefresh/vote
     #The directory should be relative to git repository that is used for cloning
     working_directory: ./vote/
     #Dockerfile location should be relative to the working directory
@@ -16,14 +16,14 @@ steps:
   build_image_result:
     title: Building Result Image
     type: build
-    image_name: containers101/result
+    image_name: aloncodefresh/result
     working_directory: ./result/
     dockerfile: Dockerfile
 
   build_image_worker:
     title: Building Worker Image
     type: build
-    image_name: containers101/worker
+    image_name: aloncodefresh/worker
     working_directory: ./worker/
     dockerfile: Dockerfile
 
@@ -53,3 +53,66 @@ steps:
     type: push
     candidate: '${{build_image_worker}}'
     tag: '${{CF_BRANCH}}'
+
+  composition_step:
+    title: Composition step
+    type: composition
+    composition: |
+
+
+
+  unit_test:
+    type: composition
+    working_directory: ${{main_clone}}
+    composition:
+      version: '2'
+      services:
+        vote:
+          command: python app.py
+          volumes:
+            - './vote:/app'
+          ports:
+            - '5000:80'
+          networks:
+            - front-tier
+            - back-tier
+          image: 'aloncodefresh/votingapp_vote:CF-3764'
+        result:
+          command: nodemon --debug server.js $CF_VOLUME_PATH
+          volumes:
+            - './result:/app'
+          ports:
+            - '5001:80'
+            - '5858:5858'
+          networks:
+            - front-tier
+            - back-tier
+          image: 'aloncodefresh/votingapp_result:CF-3764'
+        worker:
+          networks:
+            - back-tier
+          image: 'aloncodefresh/votingapp_worker:CF-3764'
+        redis:
+          image: 'redis:alpine'
+          container_name: redis
+          ports:
+            - '6379'
+          networks:
+            - back-tier
+        db:
+          image: 'postgres:9.4'
+          container_name: db
+          volumes:
+            - 'db-data:/var/lib/postgresql/data'
+            - '${{CF_VOLUME_NAME}}:/codefresh/'
+          networks:
+            - back-tier
+      volumes:
+        db-data: null
+      networks:
+        front-tier: null
+        back-tier: null
+    composition_candidates:
+        test:
+          image: redis
+          command: bash -c 'sleep 30 && echo $CF_VOLUME_PATH'
