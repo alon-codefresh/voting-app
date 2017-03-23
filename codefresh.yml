@@ -98,7 +98,6 @@ steps:
           container_name: db
           volumes:
             - 'db-data:/var/lib/postgresql/data'
-            - '${{CF_VOLUME_NAME}}:/codefresh/'
           networks:
             - back-tier
       volumes:
@@ -109,4 +108,8 @@ steps:
     composition_candidates:
         test:
           image: redis
-          command: bash -c 'sleep 30 && echo $CF_VOLUME_PATH'
+          command: bash -c 'sleep 30 && echo ${{CF_VOLUME_PATH}}'
+          volumes:
+            - 'db-data:/var/lib/postgresql/data'
+            - '${{CF_VOLUME_NAME}}:/codefresh/'
+
