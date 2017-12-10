@@ -16,7 +16,7 @@ steps:
     composition_candidates:
       test:
         image: redis:alpine
-        command: 'pwd && echo branch2 ${{CF_BRANCH}} path2 ${{CF_VOLUME_PATH}}'
+        command: 'pwd && ls && sleep 30 && pwd && ls && echo branch2 ${{CF_BRANCH}} path2 ${{CF_VOLUME_PATH}}'
         volumes:
           - '${{CF_VOLUME_NAME}}:/codefresh/'
 
